@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://apollo.example/schemas/bridge-v1.schema.json",
+  "title": "Apollo Desktop Bridge Protocol v1",
+  "definitions": {
+    "emptyPayload": { "type": "object", "additionalProperties": false, "maxProperties": 0 },
+    "requestId": { "type": "string", "format": "uuid" },
+    "printerSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "printerId": { "type": "string", "minLength": 1, "maxLength": 120 } }
+    },
+    "printOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "printerId": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "copies": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "width": { "enum": ["58mm", "80mm"] }
+      }
+    },
+    "requests": {
+      "oneOf": [
+        { "$ref": "#/definitions/requestBridgeGetVersion" },
+        { "$ref": "#/definitions/requestBridgeGetCapabilities" },
+        { "$ref": "#/definitions/requestBridgePing" },
+        { "$ref": "#/definitions/requestPrinterList" },
+        { "$ref": "#/definitions/requestPrinterStatus" },
+        { "$ref": "#/definitions/requestPrinterPrintTest" },
+        { "$ref": "#/definitions/requestPrinterPrintJob" },
+        { "$ref": "#/definitions/requestDrawerStatus" },
+        { "$ref": "#/definitions/requestDrawerOpen" },
+        { "$ref": "#/definitions/requestDeviceGetProfile" }
+      ]
+    },
+    "requestBridgeGetVersion": { "$ref": "#/definitions/baseEmptyBridgeGetVersion" },
+    "baseEmptyBridgeGetVersion": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "bridge.getVersion" }, "payload": { "$ref": "#/definitions/emptyPayload" } } },
+    "requestBridgeGetCapabilities": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "bridge.getCapabilities" }, "payload": { "$ref": "#/definitions/emptyPayload" } } },
+    "requestBridgePing": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "bridge.ping" }, "payload": { "type": "object", "additionalProperties": false, "properties": { "nonce": { "type": "string", "maxLength": 128 } } } } },
+    "requestPrinterList": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "printer.list" }, "payload": { "$ref": "#/definitions/emptyPayload" } } },
+    "requestPrinterStatus": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "printer.status" }, "payload": { "$ref": "#/definitions/printerSelector" } } },
+    "requestPrinterPrintTest": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "printer.printTest" }, "payload": { "$ref": "#/definitions/printOptions" } } },
+    "requestPrinterPrintJob": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "printer.printJob" }, "payload": { "type": "object", "additionalProperties": false, "required": ["printJobId", "document", "options"], "properties": { "printJobId": { "type": "string", "format": "uuid" }, "document": { "$ref": "https://apollo.example/schemas/receipt-v1.schema.json" }, "options": { "$ref": "#/definitions/printOptions" } } } } },
+    "requestDrawerStatus": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "drawer.status" }, "payload": { "$ref": "#/definitions/emptyPayload" } } },
+    "requestDrawerOpen": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "drawer.open" }, "payload": { "type": "object", "additionalProperties": false, "required": ["actionId", "authorizationGrant", "reasonCode"], "properties": { "actionId": { "type": "string", "format": "uuid" }, "authorizationGrant": { "type": "string", "minLength": 16, "maxLength": 4096 }, "reasonCode": { "enum": ["cash_payment", "cash_deposit", "cash_withdrawal", "cash_opening", "cash_closing", "supervisor_override"] } } } } },
+    "requestDeviceGetProfile": { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "command", "payload"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "command": { "const": "device.getProfile" }, "payload": { "$ref": "#/definitions/emptyPayload" } } },
+    "responseEnvelope": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "ok", "result"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "ok": { "const": true }, "result": {} } },
+        { "type": "object", "additionalProperties": false, "required": ["version", "requestId", "ok", "error"], "properties": { "version": { "const": 1 }, "requestId": { "$ref": "#/definitions/requestId" }, "ok": { "const": false }, "error": { "type": "object", "additionalProperties": false, "required": ["code", "message"], "properties": { "code": { "enum": ["INVALID_REQUEST", "UNSUPPORTED_VERSION", "UNKNOWN_COMMAND", "PAYLOAD_TOO_LARGE", "TIMEOUT", "CANCELLED", "UNSUPPORTED_CAPABILITY", "PRINTER_UNAVAILABLE", "PRINTER_OFFLINE", "PRINTER_OUT_OF_PAPER", "PRINTER_COVER_OPEN", "PRINTER_BUSY", "PRINT_FAILED", "DRAWER_UNAVAILABLE", "DRAWER_UNAUTHORIZED", "DUPLICATE_ACTION", "INTERNAL_ERROR"] }, "message": { "type": "string", "minLength": 1, "maxLength": 240 }, "details": { "type": "object" } } } } }
+      ]
+    },
+    "results": {
+      "bridge.getVersion": { "type": "object", "additionalProperties": false, "required": ["bridgeVersion", "protocol"], "properties": { "bridgeVersion": { "const": 1 }, "protocol": { "const": "apollo-desktop-bridge" } } },
+      "bridge.getCapabilities": { "$ref": "#/definitions/capabilities" },
+      "bridge.ping": { "type": "object", "additionalProperties": false, "required": ["pong", "timestamp"], "properties": { "pong": { "type": "string", "maxLength": 128 }, "timestamp": { "type": "string", "format": "date-time" } } },
+      "printer.list": { "type": "array", "maxItems": 50, "items": { "$ref": "#/definitions/printerInfo" } },
+      "printer.status": { "$ref": "#/definitions/printerStatus" },
+      "printer.printTest": { "$ref": "#/definitions/printJobResult" },
+      "printer.printJob": { "$ref": "#/definitions/printJobResult" },
+      "drawer.status": { "$ref": "#/definitions/drawerStatus" },
+      "drawer.open": { "$ref": "#/definitions/drawerResult" },
+      "device.getProfile": { "$ref": "#/definitions/deviceProfile" }
+    },
+    "capabilities": { "type": "object", "additionalProperties": false, "required": ["bridgeVersion", "platform", "capabilities"], "properties": { "bridgeVersion": { "const": 1 }, "platform": { "enum": ["browser", "mock-linux", "macos"] }, "capabilities": { "type": "object", "additionalProperties": false, "required": ["printing", "cashDrawer", "printerStatus", "deviceSettings"], "properties": { "printing": { "type": "boolean" }, "cashDrawer": { "type": "boolean" }, "printerStatus": { "type": "boolean" }, "deviceSettings": { "type": "boolean" } } } } },
+    "printerInfo": { "type": "object", "additionalProperties": false, "required": ["id", "name", "isDefault", "supportedWidths"], "properties": { "id": { "type": "string", "minLength": 1, "maxLength": 120 }, "name": { "type": "string", "minLength": 1, "maxLength": 160 }, "isDefault": { "type": "boolean" }, "supportedWidths": { "type": "array", "uniqueItems": true, "items": { "enum": ["58mm", "80mm"] } } } },
+    "printerStatus": { "type": "object", "additionalProperties": false, "required": ["printerId", "state"], "properties": { "printerId": { "type": "string" }, "state": { "enum": ["ready", "offline", "out_of_paper", "cover_open", "busy", "error", "unavailable"] }, "message": { "type": "string", "maxLength": 240 } } },
+    "printJobResult": { "type": "object", "additionalProperties": false, "required": ["printJobId", "status", "acceptedAt"], "properties": { "printJobId": { "type": "string", "format": "uuid" }, "status": { "enum": ["accepted", "completed", "failed"] }, "acceptedAt": { "type": "string", "format": "date-time" }, "completedAt": { "type": "string", "format": "date-time" }, "errorCode": { "type": "string", "maxLength": 80 } } },
+    "drawerStatus": { "type": "object", "additionalProperties": false, "required": ["state"], "properties": { "state": { "enum": ["available", "unavailable", "open", "closed", "unknown"] }, "message": { "type": "string", "maxLength": 240 } } },
+    "drawerResult": { "type": "object", "additionalProperties": false, "required": ["actionId", "status", "reasonCode", "performedAt"], "properties": { "actionId": { "type": "string", "format": "uuid" }, "status": { "enum": ["opened", "rejected"] }, "reasonCode": { "enum": ["cash_payment", "cash_deposit", "cash_withdrawal", "cash_opening", "cash_closing", "supervisor_override"] }, "performedAt": { "type": "string", "format": "date-time" } } },
+    "deviceProfile": { "type": "object", "additionalProperties": false, "required": ["deviceId", "displayName", "platform", "settingsWritable"], "properties": { "deviceId": { "type": "string", "minLength": 1, "maxLength": 120 }, "displayName": { "type": "string", "minLength": 1, "maxLength": 160 }, "platform": { "enum": ["browser", "mock-linux", "macos"] }, "settingsWritable": { "type": "boolean" } } }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/requests" },
+    { "$ref": "#/definitions/responseEnvelope" }
+  ]
+}
