@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@apollo/receipt-core": ["./packages/receipt-core/src/index.ts"],
+      "@apollo/bridge-contract": ["./packages/bridge-contract/src/index.ts"],
+      "@apollo/bridge-client": ["./packages/bridge-client/src/index.ts"],
+      "@apollo/hardware-mock": ["./packages/hardware-mock/src/index.ts"],
+      "@apollo/react-integration": ["./packages/react-integration/src/index.ts"]
+    },
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["packages/**/*.ts", "apps/**/*.ts", "*.config.ts"],
+  "exclude": ["**/dist/**", "node_modules"]
+}
