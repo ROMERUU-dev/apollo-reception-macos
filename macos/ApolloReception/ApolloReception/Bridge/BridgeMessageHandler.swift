@@ -31,7 +31,7 @@ final class BridgeMessageHandler: NSObject, WKScriptMessageHandlerWithReply {
             scheme: securityOrigin.protocol,
             host: securityOrigin.host,
             port: securityOrigin.port
-        ) else {
+        ), originPolicy.allowsBridge(documentURL: message.frameInfo.request.url) else {
             replyHandler(processor.reject(
                 message.body,
                 error: BridgeError(code: .invalidRequest, message: "Bridge message origin is not allowed.")

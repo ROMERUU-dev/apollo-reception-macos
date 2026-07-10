@@ -11,6 +11,38 @@ describe('React integration services', () => {
     expect((await selectDesktopBridge({ isDevelopment: true }).getCapabilities()).platform).toBe('browser');
   });
 
+  it('selects WebKit only when a native reply handler completes the v1 handshake', async () => {
+    const bridge = selectDesktopBridge({
+      isDevelopment: false,
+      windowLike: {
+        apolloNativeBridge: {
+          postMessage: async (request: unknown) => {
+            const value = request as { requestId: string; command: string; payload: { nonce?: string } };
+            const result = value.command === 'bridge.getVersion'
+              ? { bridgeVersion: 1, protocol: 'apollo-desktop-bridge' }
+              : value.command === 'bridge.getCapabilities'
+                ? { bridgeVersion: 1, platform: 'macos', capabilities: { printing: false, cashDrawer: false, printerStatus: false, deviceSettings: false } }
+                : { pong: value.payload.nonce ?? '', timestamp: '2026-01-01T00:00:00.000Z' };
+            return { version: 1, requestId: value.requestId, ok: true, result };
+          },
+        },
+      },
+    });
+
+    await expect(bridge.getVersion()).resolves.toEqual({ bridgeVersion: 1, protocol: 'apollo-desktop-bridge' });
+    await expect(bridge.getCapabilities()).resolves.toMatchObject({ platform: 'macos' });
+    await expect(bridge.ping('react-real')).resolves.toMatchObject({ pong: 'react-real' });
+  });
+
+  it('can explicitly force browser behavior even when WebKit globals exist', async () => {
+    const bridge = selectDesktopBridge({
+      mode: 'browser',
+      isDevelopment: false,
+      windowLike: { apolloNativeBridge: { postMessage: async () => { throw new Error('must not run'); } } },
+    });
+    await expect(bridge.getCapabilities()).resolves.toMatchObject({ platform: 'browser' });
+  });
+
   it('requires explicit development-only mock mode', () => {
     expect(() => selectDesktopBridge({ mode: 'mock', isDevelopment: false, mock: new MockDesktopAdapter() })).toThrow(/forbidden/);
     expect(() => selectDesktopBridge({ mode: 'mock', isDevelopment: true })).toThrow(/explicit mock/);

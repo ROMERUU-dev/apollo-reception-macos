@@ -45,6 +45,16 @@ final class NavigationPolicyTests: XCTestCase {
         XCTAssertEqual(disposition("https://apollo.example/recepcion/settings", opensNewWindow: true), .loadInCurrentWebView)
     }
 
+    func testBridgePrivilegeBelongsOnlyToApolloOrigin() {
+        let origins = policy.origins
+        XCTAssertTrue(origins.allowsBridge(scheme: "https", host: "apollo.example", port: 443))
+        XCTAssertFalse(origins.allowsBridge(scheme: "https", host: "login.example", port: 443))
+        XCTAssertFalse(origins.allowsBridge(scheme: "https", host: "unknown.example", port: 443))
+        XCTAssertTrue(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/recepcion")))
+        XCTAssertFalse(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/auth/realms/apollo")))
+        XCTAssertFalse(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/oauth2/start")))
+    }
+
     private func disposition(
         _ value: String,
         userInitiated: Bool = false,
