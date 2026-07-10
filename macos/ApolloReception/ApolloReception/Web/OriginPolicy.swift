@@ -86,4 +86,20 @@ struct OriginPolicy {
         guard let origin = WebOrigin(scheme: scheme, host: host, port: port) else { return false }
         return origin == apolloOrigin
     }
+
+    func allowsBridge(documentURL: URL?) -> Bool {
+        guard classify(documentURL) == .apollo,
+              let path = documentURL?.path.lowercased() else { return false }
+
+        // Apollo currently hosts Keycloak and oauth2-proxy below the same HTTPS
+        // origin as React. Those documents may navigate in the WKWebView, but
+        // must never inherit the privileged React bridge merely by sharing an
+        // origin.
+        return !Self.isAuthenticationPath(path)
+    }
+
+    private static func isAuthenticationPath(_ path: String) -> Bool {
+        path == "/auth" || path.hasPrefix("/auth/") ||
+            path == "/oauth2" || path.hasPrefix("/oauth2/")
+    }
 }

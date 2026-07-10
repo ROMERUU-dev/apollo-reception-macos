@@ -92,6 +92,41 @@ final class WKWebViewBridgeIntegrationTests: XCTestCase {
         XCTAssertEqual(error["code"] as? String, "INVALID_REQUEST")
     }
 
+    func testSameOriginAuthenticationPathCannotUsePrivilegedBridge() async throws {
+        let scheme = "apollosameorigin"
+        let host = "reception"
+        let requestID = "10000000-0000-4000-8000-000000000012"
+        let contentController = WKUserContentController()
+        let apolloOrigin = try XCTUnwrap(WebOrigin(scheme: scheme, host: host, port: 0))
+        let bridgeHandler = BridgeMessageHandler(originPolicy: OriginPolicy(
+            apolloOrigin: apolloOrigin,
+            oidcOrigins: [],
+            externalOrigins: []
+        ))
+        contentController.addScriptMessageHandler(
+            bridgeHandler,
+            contentWorld: .page,
+            name: BridgeMessageHandler.name
+        )
+
+        let configuration = WKWebViewConfiguration()
+        let schemeHandler = SyntheticSchemeHandler()
+        configuration.setURLSchemeHandler(schemeHandler, forURLScheme: scheme)
+        configuration.userContentController = contentController
+
+        let webView = WKWebView(frame: .init(x: 0, y: 0, width: 640, height: 480), configuration: configuration)
+        try await load(webView, url: XCTUnwrap(URL(string: "\(scheme)://\(host)/recepcion")))
+        let allowed = try await ping(webView, requestID: requestID)
+        XCTAssertEqual(allowed["ok"] as? Bool, true)
+
+        try await load(webView, url: XCTUnwrap(URL(string: "\(scheme)://\(host)/auth/realms/apollo")))
+        let denied = try await ping(webView, requestID: requestID)
+        XCTAssertEqual(denied["requestId"] as? String, requestID)
+        XCTAssertEqual(denied["ok"] as? Bool, false)
+        let error = try XCTUnwrap(denied["error"] as? [String: Any])
+        XCTAssertEqual(error["code"] as? String, "INVALID_REQUEST")
+    }
+
     private func load(_ webView: WKWebView, url: URL) async throws {
         let navigation = NavigationCompletion(testCase: self)
         webView.navigationDelegate = navigation

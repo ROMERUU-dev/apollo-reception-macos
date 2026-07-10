@@ -50,6 +50,9 @@ final class NavigationPolicyTests: XCTestCase {
         XCTAssertTrue(origins.allowsBridge(scheme: "https", host: "apollo.example", port: 443))
         XCTAssertFalse(origins.allowsBridge(scheme: "https", host: "login.example", port: 443))
         XCTAssertFalse(origins.allowsBridge(scheme: "https", host: "unknown.example", port: 443))
+        XCTAssertTrue(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/recepcion")))
+        XCTAssertFalse(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/auth/realms/apollo")))
+        XCTAssertFalse(origins.allowsBridge(documentURL: URL(string: "https://apollo.example/oauth2/start")))
     }
 
     private func disposition(
