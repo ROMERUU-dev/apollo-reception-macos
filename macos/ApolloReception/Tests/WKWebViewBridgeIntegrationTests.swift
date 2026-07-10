@@ -53,6 +53,69 @@ final class WKWebViewBridgeIntegrationTests: XCTestCase {
         let result = try XCTUnwrap(response["result"] as? [String: Any])
         XCTAssertEqual(result["pong"] as? String, "real-wkwebview")
     }
+
+    func testNavigationFromApolloToOIDCInvalidatesBridgePrivilege() async throws {
+        let apolloScheme = "apolloprivileged"
+        let oidcScheme = "apolloidentity"
+        let host = "reception"
+        let requestID = "10000000-0000-4000-8000-000000000011"
+        let contentController = WKUserContentController()
+        let apolloOrigin = try XCTUnwrap(WebOrigin(scheme: apolloScheme, host: host, port: 0))
+        let oidcOrigin = try XCTUnwrap(WebOrigin(scheme: oidcScheme, host: host, port: 0))
+        let bridgeHandler = BridgeMessageHandler(originPolicy: OriginPolicy(
+            apolloOrigin: apolloOrigin,
+            oidcOrigins: [oidcOrigin],
+            externalOrigins: []
+        ))
+        contentController.addScriptMessageHandler(
+            bridgeHandler,
+            contentWorld: .page,
+            name: BridgeMessageHandler.name
+        )
+
+        let configuration = WKWebViewConfiguration()
+        let schemeHandler = SyntheticSchemeHandler()
+        configuration.setURLSchemeHandler(schemeHandler, forURLScheme: apolloScheme)
+        configuration.setURLSchemeHandler(schemeHandler, forURLScheme: oidcScheme)
+        configuration.userContentController = contentController
+
+        let webView = WKWebView(frame: .init(x: 0, y: 0, width: 640, height: 480), configuration: configuration)
+        try await load(webView, url: XCTUnwrap(URL(string: "\(apolloScheme)://\(host)/recepcion")))
+        let allowed = try await ping(webView, requestID: requestID)
+        XCTAssertEqual(allowed["ok"] as? Bool, true)
+
+        try await load(webView, url: XCTUnwrap(URL(string: "\(oidcScheme)://\(host)/authorize")))
+        let denied = try await ping(webView, requestID: requestID)
+        XCTAssertEqual(denied["requestId"] as? String, requestID)
+        XCTAssertEqual(denied["ok"] as? Bool, false)
+        let error = try XCTUnwrap(denied["error"] as? [String: Any])
+        XCTAssertEqual(error["code"] as? String, "INVALID_REQUEST")
+    }
+
+    private func load(_ webView: WKWebView, url: URL) async throws {
+        let navigation = NavigationCompletion(testCase: self)
+        webView.navigationDelegate = navigation
+        webView.load(URLRequest(url: url))
+        await fulfillment(of: [navigation.finished], timeout: 5)
+        if let error = navigation.error { throw error }
+    }
+
+    private func ping(_ webView: WKWebView, requestID: String) async throws -> [String: Any] {
+        let value = try await webView.callAsyncJavaScript(
+            "return await window.webkit.messageHandlers.apolloBridge.postMessage(request);",
+            arguments: [
+                "request": [
+                    "version": 1,
+                    "requestId": requestID,
+                    "command": "bridge.ping",
+                    "payload": ["nonce": "origin-transition"]
+                ]
+            ],
+            in: nil,
+            contentWorld: .page
+        )
+        return try XCTUnwrap(value as? [String: Any])
+    }
 }
 
 private final class SyntheticSchemeHandler: NSObject, WKURLSchemeHandler {
