@@ -1,0 +1,42 @@
+name: ApolloReception
+options:
+  bundleIdPrefix: com.apollo
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+  xcodeVersion: "15.2"
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    DEVELOPMENT_TEAM: ""
+targets:
+  ApolloReception:
+    type: application
+    platform: macOS
+    sources:
+      - path: ApolloReception
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.romeruu.apollo-reception
+        PRODUCT_NAME: ApolloReception
+        INFOPLIST_FILE: ApolloReception/Info.plist
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
+    scheme:
+      testTargets:
+        - ApolloReceptionTests
+  ApolloReceptionTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: ApolloReception
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.romeruu.apollo-reception.tests
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO

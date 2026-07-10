@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apollo Reception Native Harness</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #eef3f8; color: #172033; }
+    header { background: #12385b; color: white; padding: 26px 34px; }
+    header p { margin: 6px 0 0; opacity: .8; }
+    main { padding: 34px; max-width: 980px; margin: auto; }
+    .notice { background: #fff4cc; border: 1px solid #e4c761; border-radius: 10px; padding: 14px; margin-bottom: 22px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    article { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 18px #12385b18; }
+    article h2 { font-size: 16px; margin-top: 0; }
+    .status { font-weight: 700; color: #805900; }
+    .status.ok { color: #08763c; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; }
+    nav { margin-top: 22px; }
+    a { color: #0b5eab; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Apollo Reception for macOS</strong>
+    <p>Synthetic native-shell validation — no patient or production data</p>
+  </header>
+  <main>
+    <div class="notice">This local page validates WKWebView and Bridge Protocol v1. It is not the Apollo production frontend or an OIDC test.</div>
+    <div class="grid">
+      <article id="bridge-ping"><h2>bridge.ping</h2><div class="status">Pending</div><pre></pre></article>
+      <article id="bridge-version"><h2>bridge.getVersion</h2><div class="status">Pending</div><pre></pre></article>
+      <article id="bridge-capabilities"><h2>bridge.getCapabilities</h2><div class="status">Pending</div><pre></pre></article>
+    </div>
+    <nav><a href="/recepcion/settings">Open an internal Reception route</a></nav>
+  </main>
+  <script>
+    const calls = [
+      ['bridge-ping', 'bridge.ping', { nonce: 'macos-real-wkwebview' }],
+      ['bridge-version', 'bridge.getVersion', {}],
+      ['bridge-capabilities', 'bridge.getCapabilities', {}]
+    ];
+
+    async function run() {
+      const bridge = window.apolloNativeBridge;
+      if (!bridge) throw new Error('Native bridge was not injected.');
+      let successes = 0;
+      for (const [elementID, command, payload] of calls) {
+        const element = document.getElementById(elementID);
+        const response = await bridge.postMessage({
+          version: 1,
+          requestId: crypto.randomUUID(),
+          command,
+          payload
+        });
+        const status = element.querySelector('.status');
+        status.textContent = response.ok ? 'PASS' : `FAIL: ${response.error?.code ?? 'unknown'}`;
+        status.classList.toggle('ok', response.ok);
+        element.querySelector('pre').textContent = JSON.stringify(response, null, 2);
+        if (response.ok) successes += 1;
+      }
+      document.documentElement.dataset.bridgeRoundtrip = successes === calls.length ? 'pass' : 'fail';
+      await fetch('/__evidence/bridge-roundtrip', {
+        method: 'POST',
+        body: successes === calls.length ? 'pass' : 'fail'
+      });
+      if (window.location.pathname === '/recepcion') {
+        window.location.assign('/recepcion/settings');
+      }
+    }
+
+    run().catch((error) => {
+      document.querySelectorAll('.status').forEach((value) => { value.textContent = `FAIL: ${error.message}`; });
+      document.documentElement.dataset.bridgeRoundtrip = 'fail';
+      fetch('/__evidence/bridge-roundtrip', { method: 'POST', body: 'fail' });
+    });
+  </script>
+</body>
+</html>

@@ -14,4 +14,7 @@ coverage/
 *.key
 *.p12
 *.mobileprovision
+*.profraw
+DerivedData/
+xcuserdata/
 

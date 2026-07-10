@@ -2,7 +2,7 @@
 
 Apollo Reception keeps the existing Apollo React `/recepcion` UI and adds a narrow, versioned desktop bridge for device capabilities. It does not rewrite Reception in Swift.
 
-**Current status: Linux Foundation Phase.** The bridge protocol and client, browser and Linux mock adapters, receipt model/renderers, hardware simulator, React-facing services, tests, and Linux CI are implemented portably. No patient or production data belongs in this public repository.
+**Current status: macOS Native Shell Phase.** The portable Linux foundation remains intact, and a real SwiftUI/AppKit `ApolloReception.app` now embeds WKWebView plus the minimum Bridge Protocol v1 implementation. No patient or production data belongs in this public repository.
 
 ## Architecture
 
@@ -14,9 +14,9 @@ ReceiptPrintingService / CashDrawerService
 ApolloDesktopBridge
    ├── BrowserAdapter
    ├── MockDesktopAdapter (Linux development only)
-   └── future MacDesktopAdapter
+   └── Mac WKWebView transport
                 │
-        Swift + WKWebView + native device adapters
+        Swift + WKWebView bridge shell
 ```
 
 The web page can send only ten strict commands. There is no arbitrary shell, filesystem, USB, serial, or raw printer-byte API.
@@ -51,6 +51,12 @@ The browser simulator supports ready/offline/out-of-paper/busy printer states, a
 
 See [Apollo integration](docs/apollo-integration.md) for the adoption boundary. The package dependency should be pinned to a reviewed tag or commit; do not copy source into Apollo or make the web build depend on macOS.
 
+## Native macOS shell
+
+The real Xcode project, configuration model, navigation/origin policies, Swift bridge, tests, and CLI build commands live under `macos/ApolloReception`. See [macOS native shell](docs/macos-native-shell.md).
+
+Only bridge introspection is enabled. Printing, printer status, drawer control, and device settings remain unavailable and are reported as such.
+
 ## Explicitly not validated
 
-This repository does **not** currently contain or claim a working macOS app, Xcode project, WKWebView handler, AppKit printing, printer vendor SDK, ESC/POS transport, physical drawer control, Apple signing, notarization, `.app`, or DMG. Those require the Mac Phase and real target hardware described in [macOS handoff](docs/macos-handoff.md).
+This phase does **not** claim a working Apollo production login/OIDC flow, AppKit printing, printer vendor SDK, ESC/POS transport, physical drawer control, Apple Silicon run, Apple signing, notarization, or DMG. Those require the missing deployment configuration, accounts, distribution decisions, and real target hardware described in [macOS handoff](docs/macos-handoff.md).
