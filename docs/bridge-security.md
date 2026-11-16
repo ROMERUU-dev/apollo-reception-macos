@@ -17,6 +17,12 @@ Explicitly prohibited: `shell.execute`, `system.command`, arbitrary file reads/w
 
 ## Required in Mac Phase
 
+The origin, navigation, route, and external-link rules below are encoded
+portably as reviewable, tested configuration in `@apollo/webview-policy`
+(`defineWebViewPolicy`, `evaluateNavigation`, `isAllowedMessageOrigin`). The
+Swift shell must mirror those decisions; the real origin is configured at
+runtime and never committed.
+
 - Allow only the configured Apollo HTTPS origin and the minimum explicitly enumerated OIDC origins.
 - Allow controlled Apollo routes; do not load arbitrary sites.
 - Block arbitrary navigation. Open approved external links outside WKWebView under a documented policy.

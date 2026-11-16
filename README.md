@@ -44,10 +44,12 @@ The browser simulator supports ready/offline/out-of-paper/busy printer states, a
 ## Packages
 
 - `@apollo/bridge-contract`: protocol types, JSON Schema runtime validation, size limits, and deterministic envelopes.
-- `@apollo/bridge-client`: correlated client, timeout/cancellation handling, and BrowserAdapter.
+- `@apollo/bridge-client`: correlated client, timeout/cancellation handling, BrowserAdapter, and the `apolloBridge` WKWebView transport (JavaScript half of the native channel).
 - `@apollo/receipt-core`: structured tickets, safe decimal money, text preview, and escaped HTML preview.
 - `@apollo/hardware-mock`: deterministic Linux device adapter and validated in-process transport.
-- `@apollo/react-integration`: centralized printing/drawer services and fail-closed mode selection.
+- `@apollo/react-integration`: the Apollo composition root (`composeDesktopPlatform`), centralized printing/drawer services, and fail-closed mode selection.
+- `@apollo/webview-policy`: portable WKWebView origin/navigation/route/external-link policy as reviewable, tested configuration.
+- `@apollo/swift-models`: generates Swift Codable models from the JSON Schemas (`npm run generate:swift`, drift-checked by `npm run check:swift`).
 
 See [Apollo integration](docs/apollo-integration.md) for the adoption boundary. The package dependency should be pinned to a reviewed tag or commit; do not copy source into Apollo or make the web build depend on macOS.
 

@@ -11,6 +11,7 @@ export default defineConfig({
       '@apollo/bridge-client': fromRoot('./packages/bridge-client/src/index.ts'),
       '@apollo/hardware-mock': fromRoot('./packages/hardware-mock/src/index.ts'),
       '@apollo/react-integration': fromRoot('./packages/react-integration/src/index.ts'),
+      '@apollo/webview-policy': fromRoot('./packages/webview-policy/src/index.ts'),
     },
   },
   test: {

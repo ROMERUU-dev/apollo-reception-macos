@@ -15,6 +15,25 @@ Create a single Apollo composition module, conceptually `src/platform/desktop/in
 3. later detects/constructs MacDesktopAdapter only after a validated WKWebView handshake;
 4. exports one `ReceiptPrintingService`, one `CashDrawerService`, and capability state.
 
+This module is implemented portably as `composeDesktopPlatform` in
+`@apollo/react-integration` (`packages/react-integration/src/platform/desktop.ts`).
+Apollo adopts it as its own `src/platform/desktop` and calls it once at startup:
+
+```ts
+const platform = await composeDesktopPlatform({
+  mode: import.meta.env.VITE_APOLLO_DESKTOP_MODE,
+  isDevelopment: import.meta.env.DEV,
+  grants: apolloHardwareGrantProvider,            // backend one-time grant issuer
+  createMock: () => new MockDesktopAdapter(),      // dev-only; dynamically imported
+});
+```
+
+The mock and native adapters are injected, so `@apollo/hardware-mock` and native
+code never enter the web bundle. Without a configured `grants` provider,
+`drawer.open` is fail-closed by default. The native path is constructed only
+after `handshakeMacDesktopBridge` validates the protocol, otherwise it falls back
+to the browser adapter.
+
 `CashModule` should call service methods after a successful backend transaction. It must not call bridge commands directly. Browser printing should continue through an explicit `window.print` fallback. Browser drawer UI stays unavailable. Device status can later fit under Reception → Configuración without redesigning Reception.
 
 No Apollo files were changed in this phase: the relevant backend worktree had unrelated local changes, while the clean frontend branch is part of an active stacked F2 Draft PR. Injecting an unpublished desktop dependency there would mix concerns and destabilize the existing review chain.

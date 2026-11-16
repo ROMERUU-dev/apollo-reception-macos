@@ -14,10 +14,12 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "build:packages": "npm run build -w @apollo/receipt-core && npm run build -w @apollo/bridge-contract && npm run build -w @apollo/bridge-client && npm run build -w @apollo/hardware-mock && npm run build -w @apollo/react-integration",
+    "build:packages": "npm run build -w @apollo/receipt-core && npm run build -w @apollo/bridge-contract && npm run build -w @apollo/bridge-client && npm run build -w @apollo/hardware-mock && npm run build -w @apollo/webview-policy && npm run build -w @apollo/react-integration",
     "build": "npm run build:packages && npm run build -w @apollo/simulator",
     "simulator": "npm run dev -w @apollo/simulator",
     "simulator:demo": "tsx apps/simulator/src/demo.ts",
+    "generate:swift": "tsx packages/swift-models/src/cli.ts",
+    "check:swift": "tsx packages/swift-models/src/cli.ts --check",
     "validate": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
