@@ -1,0 +1,11 @@
+{
+  "name": "@apollo/react-integration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "dependencies": { "@apollo/bridge-client": "0.1.0", "@apollo/bridge-contract": "0.1.0", "@apollo/receipt-core": "0.1.0" },
+  "scripts": { "build": "tsc -p tsconfig.json" }
+}

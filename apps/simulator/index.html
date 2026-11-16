@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apollo Hardware Simulator</title>
+  </head>
+  <body>
+    <main>
+      <header><p>LINUX FOUNDATION PHASE</p><h1>Apollo Reception Hardware Simulator</h1><span>Solo estados y fixtures sintéticos; no controla hardware real.</span></header>
+      <section class="controls">
+        <article><h2>Printer</h2><div id="printer-controls"></div><button id="print-success">Synthetic print job</button><button id="print-failure">Demonstrate failure</button></article>
+        <article><h2>Drawer</h2><div id="drawer-controls"></div><button id="drawer-open">Authorized mock open</button><button id="drawer-denied">Unauthorized mock open</button></article>
+      </section>
+      <section class="previews"><article><h2>58 mm preview</h2><div id="preview-58"></div></article><article><h2>80 mm preview</h2><div id="preview-80"></div></article></section>
+      <section><h2>Redacted event log</h2><pre id="event-log" aria-live="polite"></pre></section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+:root { color: #dce9f3; background: #071018; font-family: Inter, system-ui, sans-serif; }
+body { margin: 0; }
+main { width: min(1180px, calc(100% - 32px)); margin: 32px auto; }
+header, article, section > pre { border: 1px solid #294253; border-radius: 14px; background: #0d1a24; padding: 20px; }
+header p { color: #59d4a8; font: 700 12px ui-monospace, monospace; letter-spacing: .14em; }
+h1, h2 { margin-top: 0; }
+.controls, .previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.controls article { min-height: 170px; }
+button { border: 1px solid #527184; border-radius: 8px; background: #152b39; color: #eaf5fb; padding: 8px 11px; margin: 4px; cursor: pointer; }
+button.active { background: #147a60; border-color: #59d4a8; }
+.apollo-receipt { margin: auto; }
+#event-log { min-height: 140px; overflow: auto; color: #9ed8c4; }
+@media (max-width: 760px) { .controls, .previews { grid-template-columns: 1fr; } }

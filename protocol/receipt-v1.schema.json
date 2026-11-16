@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://apollo.example/schemas/receipt-v1.schema.json",
+  "title": "Apollo Receipt Document v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "documentId", "issuedAt", "facility", "lines", "subtotal", "adjustments", "total", "payments"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "enum": ["payment", "quote", "cash_opening", "cash_close", "voucher"] },
+    "documentId": { "type": "string", "format": "uuid" },
+    "reference": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "issuedAt": { "type": "string", "format": "date-time" },
+    "header": { "$ref": "#/definitions/textBlock" },
+    "facility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "legalName": { "type": "string", "maxLength": 160 },
+        "taxId": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 255 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "logoReference": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,80}$" }
+      }
+    },
+    "customer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "displayName": { "type": "string", "maxLength": 160 },
+        "reference": { "type": "string", "maxLength": 80 }
+      }
+    },
+    "lines": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "quantity", "unitAmount", "total"],
+        "properties": {
+          "code": { "type": "string", "maxLength": 40 },
+          "description": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "quantity": { "$ref": "#/definitions/decimal" },
+          "unitAmount": { "$ref": "#/definitions/money" },
+          "total": { "$ref": "#/definitions/money" }
+        }
+      }
+    },
+    "subtotal": { "$ref": "#/definitions/money" },
+    "adjustments": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "label", "amount"],
+        "properties": {
+          "type": { "enum": ["fixed_discount", "percentage_discount", "courtesy", "social_support", "other"] },
+          "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "amount": { "$ref": "#/definitions/money" },
+          "percentage": { "$ref": "#/definitions/decimal" }
+        }
+      }
+    },
+    "total": { "$ref": "#/definitions/money" },
+    "payments": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "amount"],
+        "properties": {
+          "method": { "enum": ["cash", "card", "transfer", "other"] },
+          "label": { "type": "string", "maxLength": 80 },
+          "amount": { "$ref": "#/definitions/money" },
+          "exchangeRate": { "$ref": "#/definitions/decimal" }
+        }
+      }
+    },
+    "change": { "$ref": "#/definitions/money" },
+    "footer": { "$ref": "#/definitions/textBlock" },
+    "qrReference": { "type": "string", "maxLength": 512 }
+  },
+  "definitions": {
+    "decimal": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,6})?$" },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "amount"],
+      "properties": {
+        "currency": { "enum": ["MXN", "USD"] },
+        "amount": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.[0-9]{2}$" }
+      }
+    },
+    "textBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lines"],
+      "properties": {
+        "lines": { "type": "array", "maxItems": 10, "items": { "type": "string", "maxLength": 240 } }
+      }
+    }
+  }
+}

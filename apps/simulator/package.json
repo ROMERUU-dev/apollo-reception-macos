@@ -1,0 +1,16 @@
+{
+  "name": "@apollo/simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@apollo/bridge-client": "0.1.0",
+    "@apollo/bridge-contract": "0.1.0",
+    "@apollo/hardware-mock": "0.1.0",
+    "@apollo/receipt-core": "0.1.0"
+  },
+  "scripts": {
+    "dev": "vite --config vite.config.ts",
+    "build": "vite build --config vite.config.ts"
+  }
+}
